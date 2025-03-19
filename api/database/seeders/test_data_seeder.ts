@@ -9,6 +9,8 @@ import Element from '#models/element'
 import { WeatherElement } from '../../types/Elements.js'
 import { SummaryAlgorithm } from '../../types/SummaryAlgorithm.js'
 import { UnitGroup } from '../../types/UnitGroup.js'
+import StationOrchestrator from '#services/stationContext/StationOrchestrator'
+import { RawRecord } from '../../types/RawRecord.js'
 
 export default class extends BaseSeeder {
   async run() {
@@ -33,10 +35,10 @@ export default class extends BaseSeeder {
         baudRate: 9600,
       },
       sensors: {
-        temperature: '5s',
-        humidity: '1min',
-        windSpeed: '2s',
-        precipation: '15min',
+        temperature: ['1min', '15min', '1h', '1d', '1d'],
+        //humidity: ['1min', '1h', '3h', '1d', '1d'],
+        //windSpeed: ['2s', '15min', '3h', '1d', '1d'],
+        //precipation: ['15min', '1h', '3h', '1d', '1w'],
       },
     }
     station.recorderStatus = 'connected'
@@ -52,7 +54,7 @@ export default class extends BaseSeeder {
     temperatureSensor.stationSlug = station.slug
     await temperatureSensor.save()
 
-    const humiditySensor = new Sensor()
+    /*const humiditySensor = new Sensor()
     humiditySensor.elementSlug = 'humidity'
     humiditySensor.slug = 'humidity'
     humiditySensor.public = true
@@ -71,11 +73,14 @@ export default class extends BaseSeeder {
     precipationSensor.slug = 'precipation'
     precipationSensor.public = true
     precipationSensor.stationSlug = station.slug
-    await precipationSensor.save()
+    await precipationSensor.save()*/
+
+    await StationOrchestrator.init()
 
     const recordCount = 100
     const now = DateTime.now()
     await this.createFloatingPointRecordsForSensor(
+      station.slug,
       temperatureSensor,
       station.interfaceConfig.sensors.temperature,
       recordCount,
@@ -84,7 +89,9 @@ export default class extends BaseSeeder {
       now
     )
 
+    /*
     await this.createFloatingPointRecordsForSensor(
+      station.slug,
       humiditySensor,
       station.interfaceConfig.sensors.humidity,
       recordCount,
@@ -94,13 +101,14 @@ export default class extends BaseSeeder {
     )
 
     await this.createFloatingPointRecordsForSensor(
+      station.slug,
       precipationSensor,
       station.interfaceConfig.sensors.precipation,
       recordCount,
       [0, 2],
       0.5,
       now
-    )
+    )*/
   }
 
   async createElements() {
@@ -304,28 +312,29 @@ export default class extends BaseSeeder {
   }
 
   async createFloatingPointRecordsForSensor(
+    stationSlug: string,
     sensor: Sensor,
-    sensorInterval: TimeInterval,
+    sensorIntervals: [TimeInterval, TimeInterval, TimeInterval, TimeInterval, TimeInterval],
     count: number,
     range: [number, number],
     changePerInterval: number,
     now: DateTime
   ) {
-    const parsedInterval = parseTimeInterval(sensorInterval)
+    const parsedIntervals = sensorIntervals.map((interval) => parseTimeInterval(interval))
     let valueBefore = Math.random() * (range[1] - range[0]) + range[0]
+    await sensor.load('element')
     for (let i = 0; i < count; i++) {
-      const record = new HistoryRecord()
-      record.sensorId = sensor.id
       let value = valueBefore + Math.random() * changePerInterval - changePerInterval / 2
       if (value > range[1]) value = range[1]
       if (value < range[0]) value = range[0]
-      record.data = {
+
+      const record: RawRecord = {
+        time: now.minus({ seconds: (count - i - 1) * parsedIntervals[0] }).toISO()!,
+        unit: sensor.element.defaultUnit,
         value,
       }
-      record.time = now.minus({ seconds: i * parsedInterval })
-      record.type = 'live'
-      record.intervalSeconds = parsedInterval
-      await record.save()
+
+      await StationOrchestrator.getStationManager(stationSlug)!.process(sensor, record)
     }
   }
 }

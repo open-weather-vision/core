@@ -17,15 +17,19 @@ export default class HistoryRecord extends AppBaseModel {
   declare data: HistoryRecordData
 
   @column()
-  declare intervalSeconds: number
+  declare type: HistoryRecordType
 
   @column()
-  declare type: HistoryRecordType
+  declare processed: boolean
 
   @column()
   declare sensorId: number
   @belongsTo(() => Sensor, {
-    foreignKey: 'sesnor_id',
+    foreignKey: 'sensorId',
   })
   declare sensor: BelongsTo<typeof Sensor>
+
+  toString() {
+    return `[${this.type}]${this.time.toISO()}(sensor: ${this.sensorId}): ${this.data.value}`
+  }
 }

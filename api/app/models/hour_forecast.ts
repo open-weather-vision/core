@@ -11,7 +11,7 @@ export default class HourForecast extends AppBaseModel {
   @column()
   declare dayForecastId: number
   @belongsTo(() => DayForecast, {
-    foreignKey: 'day_forecast_id',
+    foreignKey: 'dayForecastId',
   })
   declare dayForecast: BelongsTo<typeof DayForecast>
 

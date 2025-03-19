@@ -9,7 +9,6 @@ export default class extends BaseSchema {
       table.increments('id')
       table.dateTime('time').notNullable()
       table.jsonb('data').nullable()
-      table.integer('interval_seconds').notNullable()
       table.enum('type', HistoryRecordTypes).notNullable().defaultTo('live')
       table
         .integer('sensor_id')
@@ -17,7 +16,8 @@ export default class extends BaseSchema {
         .onDelete('CASCADE')
         .onUpdate('CASCADE')
         .notNullable()
-      table.unique(['time', 'sensor_id'])
+      table.boolean('processed').defaultTo(false).notNullable()
+      table.unique(['time', 'sensor_id', 'type'])
     })
   }
 

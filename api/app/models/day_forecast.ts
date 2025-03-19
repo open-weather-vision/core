@@ -11,7 +11,7 @@ export default class DayForecast extends AppBaseModel {
   @column()
   declare stationSlug: string
   @belongsTo(() => Station, {
-    foreignKey: 'station_slug',
+    foreignKey: 'stationSlug',
   })
   declare station: BelongsTo<typeof Station>
 

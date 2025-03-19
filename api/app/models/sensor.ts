@@ -24,14 +24,15 @@ export default class Sensor extends AppBaseModel {
   @column()
   declare stationSlug: string
   @belongsTo(() => Station, {
-    foreignKey: 'station_slug',
+    foreignKey: 'stationSlug',
   })
   declare station: BelongsTo<typeof Station>
 
   @column()
   declare elementSlug: WeatherElement
+
   @belongsTo(() => Element, {
-    foreignKey: 'element_slug',
+    foreignKey: 'elementSlug',
   })
   declare element: BelongsTo<typeof Element>
 }

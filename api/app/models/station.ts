@@ -38,7 +38,7 @@ export default class Station extends AppBaseModel {
   declare interfaceId: number
 
   @belongsTo(() => Interface, {
-    foreignKey: 'interface_id',
+    foreignKey: 'interfaceId',
   })
   declare interface: BelongsTo<typeof Interface>
 }

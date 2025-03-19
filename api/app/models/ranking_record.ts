@@ -22,7 +22,7 @@ export default class RankingRecord extends AppBaseModel {
   @column()
   declare sensorId: number
   @belongsTo(() => Sensor, {
-    foreignKey: 'sensor_id',
+    foreignKey: 'sensorId',
   })
   declare sensor: BelongsTo<typeof Sensor>
 }
