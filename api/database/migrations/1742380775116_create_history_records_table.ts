@@ -7,7 +7,7 @@ export default class extends BaseSchema {
   async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.dateTime('time').primary()
-      table.jsonb('values').nullable()
+      table.jsonb('value').nullable()
       table.integer('intervalSeconds').notNullable()
       table.enum('type', HistoryRecordTypes).notNullable().defaultTo('live')
       table
