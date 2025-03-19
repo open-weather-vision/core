@@ -1,7 +1,8 @@
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { column } from '@adonisjs/lucid/orm'
 import { type SummaryAlgorithm } from '../../types/SummaryAlgorithm.js'
+import AppBaseModel from './app_base_model.js'
 
-export default class Element extends BaseModel {
+export default class Element extends AppBaseModel {
   @column({ isPrimary: true })
   declare slug: string
 

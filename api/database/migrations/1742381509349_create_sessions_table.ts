@@ -8,9 +8,9 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
       table.string('token').notNullable()
-      table.string('refreshToken').nullable()
-      table.enum('rightLevel', RightLevels).notNullable().defaultTo('read-only')
-      table.dateTime('validUntil').nullable()
+      table.string('refresh_token').nullable()
+      table.enum('right_level', RightLevels).notNullable().defaultTo('read-only')
+      table.dateTime('valid_until').nullable()
     })
   }
 

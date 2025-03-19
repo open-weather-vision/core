@@ -1,11 +1,12 @@
 import { DateTime } from 'luxon'
-import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
+import { belongsTo, column } from '@adonisjs/lucid/orm'
 import { type InterfaceConfig } from '../../types/InterfaceConfig.js'
 import { type RecorderStatus } from '../../types/RecorderStatus.js'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Interface from './interface.js'
+import AppBaseModel from './app_base_model.js'
 
-export default class Station extends BaseModel {
+export default class Station extends AppBaseModel {
   @column({ isPrimary: true })
   declare slug: string
 
@@ -37,7 +38,7 @@ export default class Station extends BaseModel {
   declare interfaceId: number
 
   @belongsTo(() => Interface, {
-    foreignKey: 'interfaceId',
+    foreignKey: 'interface_id',
   })
   declare interface: BelongsTo<typeof Interface>
 }

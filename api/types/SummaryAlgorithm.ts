@@ -1,3 +1,20 @@
-export type SummaryAlgorithm = 'avg' | 'min' | 'max' | 'middle' | 'start' | 'end'
+export type SummaryAlgorithm =
+  | 'avg'
+  | 'min'
+  | 'max'
+  | 'min-max'
+  | 'sum'
+  | 'middle'
+  | 'start'
+  | 'end'
 
-export const SummaryAlgorithms = ['avg', 'min', 'max', 'middle', 'start', 'end'] as const
+export const SummaryAlgorithms = [
+  'avg',
+  'min',
+  'max',
+  'min-max',
+  'sum',
+  'middle',
+  'start',
+  'end',
+] as const

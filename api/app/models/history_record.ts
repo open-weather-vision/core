@@ -1,16 +1,20 @@
 import { DateTime } from 'luxon'
-import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
-import { type HistoryRecordValue } from '../../types/HistoryRecordValue.js'
+import { belongsTo, column } from '@adonisjs/lucid/orm'
+import { type HistoryRecordData as HistoryRecordData } from '../../types/HistoryRecordValue.js'
 import { type HistoryRecordType } from '../../types/HistoryRecordType.js'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Sensor from './sensor.js'
+import AppBaseModel from './app_base_model.js'
 
-export default class HistoryRecord extends BaseModel {
-  @column.dateTime({ isPrimary: true })
+export default class HistoryRecord extends AppBaseModel {
+  @column({ isPrimary: true })
+  declare id: number
+
+  @column.dateTime()
   declare time: DateTime
 
   @column()
-  declare value: HistoryRecordValue
+  declare data: HistoryRecordData
 
   @column()
   declare intervalSeconds: number
@@ -21,7 +25,7 @@ export default class HistoryRecord extends BaseModel {
   @column()
   declare sensorId: number
   @belongsTo(() => Sensor, {
-    foreignKey: 'sensorId',
+    foreignKey: 'sesnor_id',
   })
   declare sensor: BelongsTo<typeof Sensor>
 }

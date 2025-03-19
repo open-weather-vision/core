@@ -1,9 +1,11 @@
-import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
+import { belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Station from './station.js'
 import Element from './element.js'
+import type { WeatherElement } from '../../types/Elements.js'
+import AppBaseModel from './app_base_model.js'
 
-export default class Sensor extends BaseModel {
+export default class Sensor extends AppBaseModel {
   @column({ isPrimary: true })
   declare id: number
 
@@ -22,14 +24,14 @@ export default class Sensor extends BaseModel {
   @column()
   declare stationSlug: string
   @belongsTo(() => Station, {
-    foreignKey: 'stationSlug',
+    foreignKey: 'station_slug',
   })
   declare station: BelongsTo<typeof Station>
 
   @column()
-  declare elementSlug: Element
+  declare elementSlug: WeatherElement
   @belongsTo(() => Element, {
-    foreignKey: 'elementSlug',
+    foreignKey: 'element_slug',
   })
   declare element: BelongsTo<typeof Element>
 }

@@ -7,7 +7,7 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
       table
-        .integer('dayForecastId')
+        .integer('day_forecast_id')
         .notNullable()
         .references('day_forecasts.id')
         .onDelete('CASCADE')
@@ -15,15 +15,15 @@ export default class extends BaseSchema {
       table.dateTime('time').notNullable()
       table.float('temperature')
       table.float('humidity')
-      table.integer('weatherCode')
-      table.float('precipationSum')
-      table.float('rainSum')
-      table.float('snowSum')
-      table.float('maximimalWindGusts')
-      table.float('windSpeed')
-      table.float('windDirection')
-      table.float('seaLevelPressure')
-      table.unique(['dayForecastId', 'time'])
+      table.integer('weather_code')
+      table.float('precipation_sum')
+      table.float('rain_sum')
+      table.float('snow_sum')
+      table.float('maximimal_wind_gusts')
+      table.float('wind_speed')
+      table.float('wind_direction')
+      table.float('sea_level_pressure')
+      table.unique(['day_forecast_id', 'time'])
     })
   }
 

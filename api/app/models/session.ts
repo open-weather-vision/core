@@ -1,8 +1,9 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { column } from '@adonisjs/lucid/orm'
 import type { RightLevel } from '../../types/RightLevel.js'
+import AppBaseModel from './app_base_model.js'
 
-export default class Session extends BaseModel {
+export default class Session extends AppBaseModel {
   @column({ isPrimary: true })
   declare id: number
 

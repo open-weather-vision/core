@@ -1,11 +1,12 @@
 import { DateTime } from 'luxon'
-import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
+import { belongsTo, column } from '@adonisjs/lucid/orm'
 import { type RankingRecordIntervalType } from '../../types/RankingRecordIntervalType.js'
 import { type RankingRecordType } from '../../types/RankingRecordType.js'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Sensor from './sensor.js'
+import AppBaseModel from './app_base_model.js'
 
-export default class RankingRecord extends BaseModel {
+export default class RankingRecord extends AppBaseModel {
   @column.dateTime({ isPrimary: true })
   declare time: DateTime
 
@@ -21,7 +22,7 @@ export default class RankingRecord extends BaseModel {
   @column()
   declare sensorId: number
   @belongsTo(() => Sensor, {
-    foreignKey: 'sensorId',
+    foreignKey: 'sensor_id',
   })
   declare sensor: BelongsTo<typeof Sensor>
 }

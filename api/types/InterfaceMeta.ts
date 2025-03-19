@@ -1,4 +1,4 @@
-import { Element } from './Elements.js'
+import { WeatherElement } from './Elements.js'
 import { TimeInterval } from './InterfaceConfig.js'
 
 export type ConfigParam<T extends 'string' | 'number' | 'boolean'> = {
@@ -12,7 +12,7 @@ export type Tag = 'outside' | 'inside'
 export const Tags = ['outside', 'inside'] as const
 
 export type SensorDescription = {
-  element: Element
+  element: WeatherElement
   unit: string
   tags: Tag[]
   index?: number

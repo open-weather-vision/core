@@ -6,16 +6,18 @@ export default class extends BaseSchema {
 
   async up() {
     this.schema.createTable(this.tableName, (table) => {
-      table.dateTime('time').primary()
-      table.jsonb('value').nullable()
-      table.integer('intervalSeconds').notNullable()
+      table.increments('id')
+      table.dateTime('time').notNullable()
+      table.jsonb('data').nullable()
+      table.integer('interval_seconds').notNullable()
       table.enum('type', HistoryRecordTypes).notNullable().defaultTo('live')
       table
-        .integer('sensorId')
+        .integer('sensor_id')
         .references('sensors.id')
         .onDelete('CASCADE')
         .onUpdate('CASCADE')
         .notNullable()
+      table.unique(['time', 'sensor_id'])
     })
   }
 

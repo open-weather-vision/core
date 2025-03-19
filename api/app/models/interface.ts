@@ -1,6 +1,7 @@
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { column } from '@adonisjs/lucid/orm'
+import AppBaseModel from './app_base_model.js'
 
-export default class Interface extends BaseModel {
+export default class Interface extends AppBaseModel {
   @column({ isPrimary: true })
   declare id: number
 

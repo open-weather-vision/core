@@ -1,5 +1,5 @@
 import { BaseSchema } from '@adonisjs/lucid/schema'
-import { Elements } from '../../types/Elements.js'
+import { WeatherElements } from '../../types/Elements.js'
 
 export default class extends BaseSchema {
   protected tableName = 'sensors'
@@ -10,20 +10,20 @@ export default class extends BaseSchema {
       table.string('slug').notNullable()
       table.integer('index').nullable()
       table.boolean('public').notNullable().defaultTo(true)
-      table.integer('sensorGroup').nullable()
+      table.integer('sensor_group').nullable()
       table
-        .string('stationSlug')
+        .string('station_slug')
         .references('stations.slug')
         .onDelete('CASCADE')
         .onUpdate('CASCADE')
         .notNullable()
       table
-        .enum('elementSlug', Elements)
+        .enum('element_slug', WeatherElements)
         .references('elements.slug')
         .onDelete('CASCADE')
         .onUpdate('CASCADE')
         .notNullable()
-      table.unique(['stationSlug', 'slug'])
+      table.unique(['station_slug', 'slug'])
     })
   }
 

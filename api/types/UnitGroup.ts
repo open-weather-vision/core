@@ -4,13 +4,15 @@ export type UnitGroup =
   | 'pressure'
   | 'precipitation'
   | 'uv'
-  | 'airQuality'
-  | 'weatherCode'
+  | 'air-quality'
+  | 'weather-code'
   | 'portion'
   | 'duration'
   | 'distance'
   | 'direction'
-  | 'sunshineStrength'
+  | 'sunshine-strength'
+  | 'length'
+  | 'soil-moisture'
   | 'other'
 
 export const UnitGroups = [
@@ -19,12 +21,14 @@ export const UnitGroups = [
   'pressure',
   'precipitation',
   'uv',
-  'airQuality',
-  'weatherCode',
+  'air-quality',
+  'weather-code',
   'portion',
   'duration',
   'distance',
   'direction',
-  'sunshineStrength',
+  'sunshine-strength',
+  'length',
+  'soil-moisture',
   'other',
 ] as const

@@ -1,4 +1,4 @@
-export type Element =
+export type WeatherElement =
   | 'air-temperature'
   | 'dew-point'
   | 'perceived-temperature'
@@ -26,7 +26,7 @@ export type Element =
   | 'air-quality'
   | 'other'
 
-export const Elements = [
+export const WeatherElements = [
   'air-temperature',
   'dew-point',
   'perceived-temperature',

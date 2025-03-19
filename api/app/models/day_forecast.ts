@@ -1,16 +1,17 @@
 import { DateTime } from 'luxon'
-import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
+import { belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Station from './station.js'
+import AppBaseModel from './app_base_model.js'
 
-export default class DayForecast extends BaseModel {
+export default class DayForecast extends AppBaseModel {
   @column({ isPrimary: true })
   declare id: number
 
   @column()
   declare stationSlug: string
   @belongsTo(() => Station, {
-    foreignKey: 'stationSlug',
+    foreignKey: 'station_slug',
   })
   declare station: BelongsTo<typeof Station>
 

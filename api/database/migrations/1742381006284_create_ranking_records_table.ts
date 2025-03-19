@@ -9,10 +9,10 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.dateTime('time').primary()
       table.float('value').notNullable()
-      table.enum('intervalType', RankingRecordIntervalTypes).notNullable().defaultTo('month')
+      table.enum('interval_type', RankingRecordIntervalTypes).notNullable().defaultTo('month')
       table.enum('type', RankingRecordTypes).defaultTo('min').notNullable()
       table
-        .integer('sensorId')
+        .integer('sensor_id')
         .references('sensors.id')
         .onDelete('CASCADE')
         .onUpdate('CASCADE')
