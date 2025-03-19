@@ -7,6 +7,7 @@ import { HistoryRecordType, previousRecordType } from '../../../types/HistoryRec
 import { parseTimeInterval } from '../../../types/InterfaceConfig.js'
 import { RawRecord } from '../../../types/RawRecord.js'
 import { RecordMiddleware } from './RecordMiddleware.js'
+import logger from '@adonisjs/core/services/logger'
 
 type SensorState = {
   live: {
@@ -84,31 +85,35 @@ export class HistoryRecordManager extends RecordMiddleware {
     }
   }
 
-  isNewTime(sensor: Sensor, time: DateTime) {
+  private isNewTime(sensor: Sensor, time: DateTime) {
     const lastTime = this.lastSensorRecords.get(sensor.slug)
     return !lastTime || lastTime < time
   }
 
-  async newLiveRecord(sensor: Sensor, rawRecord: RawRecord): Promise<HistoryRecord[] | false> {
-    // Create new live record
+  /** Creates a new live record from a raw record. Returns a batch or records if they need to get processed to create a new day record. */
+  private async newLiveRecord(
+    sensor: Sensor,
+    rawRecord: RawRecord
+  ): Promise<HistoryRecord[] | false> {
     const liveRecord = new HistoryRecord()
     liveRecord.sensorId = sensor.id
     liveRecord.processed = false
     liveRecord.data = {
-      value: rawRecord.value, // TODO: convert to base unit
+      value: rawRecord.value, // TODO: convert to internal unit
     }
     liveRecord.time = DateTime.fromISO(rawRecord.time)
     liveRecord.type = 'live'
     await liveRecord.save()
-    console.log('Created live record: ' + liveRecord.toString())
 
+    logger.info(`${this.station?.slug}/${sensor.slug}: ${liveRecord.toString()}`)
     return await this.tryToGetUnprocessedBatch(sensor, 'live')
   }
 
-  async newSummarizedRecord(
+  /** Creates a summarized record from a batch of sub-records. Returns a batch of summarized records if they need to get processed to a super-record. */
+  private async newSummarizedRecord(
     sensor: Sensor,
     batch: HistoryRecord[],
-    type: HistoryRecordType
+    type: Exclude<HistoryRecordType, 'live'>
   ): Promise<HistoryRecord[] | false> {
     await this.summarizeRecords(sensor, batch, type)
     if (type !== 'year') return await this.tryToGetUnprocessedBatch(sensor, type)
@@ -131,9 +136,14 @@ export class HistoryRecordManager extends RecordMiddleware {
   }
 
   /** Summarizes a batch of records and creates a new record of the passed type. */
-  async summarizeRecords(sensor: Sensor, batch: HistoryRecord[], type: HistoryRecordType) {
-    console.log(this.sensorState.get(sensor.slug))
-    console.log('Batch is full, creating record of type ' + type)
+  private async summarizeRecords(
+    sensor: Sensor,
+    batch: HistoryRecord[],
+    type: Exclude<HistoryRecordType, 'live'>
+  ) {
+    logger.debug(
+      `Summarizing ${this.station?.slug}/${sensor.slug} ${previousRecordType(type)}-record batch of length ${batch.length}`
+    )
     await sensor.load('element')
     const result: HistoryRecord[] = []
     switch (sensor.element.summaryAlgorithm) {
@@ -166,8 +176,9 @@ export class HistoryRecordManager extends RecordMiddleware {
         result[0].sensorId = sensor.id
         result[0].type = type
         result[0].time = batch[0].time
-        result[0].data = batch[0].data
-        result[0].data.trend = undefined
+        result[0].data = {
+          value: batch[0].data.value,
+        }
         await result[0].save()
         break
       case 'end':
@@ -175,8 +186,9 @@ export class HistoryRecordManager extends RecordMiddleware {
         result[0].sensorId = sensor.id
         result[0].type = type
         result[0].time = batch[batch.length - 1].time
-        result[0].data = batch[batch.length - 1].data
-        result[0].data.trend = undefined
+        result[0].data = {
+          value: batch[batch.length - 1].data.value,
+        }
         await result[0].save()
         break
       case 'max':
@@ -194,8 +206,9 @@ export class HistoryRecordManager extends RecordMiddleware {
           else return current
         })
         result[0].time = maxRecord.time
-        result[0].data = maxRecord.data
-        result[0].data.trend = undefined
+        result[0].data = {
+          value: maxRecord.data.value,
+        }
         await result[0].save()
         break
       case 'min':
@@ -213,8 +226,9 @@ export class HistoryRecordManager extends RecordMiddleware {
           else return current
         })
         result[0].time = minRecord.time
-        result[0].data = minRecord.data
-        result[0].data.trend = undefined
+        result[0].data = {
+          value: minRecord.data.value,
+        }
         await result[0].save()
         break
       case 'middle':
@@ -223,49 +237,55 @@ export class HistoryRecordManager extends RecordMiddleware {
         result[0].type = type
         const middle = Math.ceil(batch.length / 2)
         result[0].time = batch[middle].time
-        result[0].data = batch[middle].data
-        result[0].data.trend = undefined
+        result[0].data = {
+          value: batch[middle].data.value,
+        }
         await result[0].save()
         break
       case 'min-max':
+        const extremes = [
+          batch.reduce((prev, current) => {
+            if (
+              prev &&
+              prev.data.value &&
+              current.data.value &&
+              prev.data.value <= current.data.value
+            )
+              return prev
+            else return current
+          }),
+          batch.reduce((prev, current) => {
+            if (
+              prev &&
+              prev.data.value &&
+              current.data.value &&
+              prev.data.value >= current.data.value
+            )
+              return prev
+            else return current
+          }),
+        ]
+
+        // min
         result[0] = new HistoryRecord()
         result[0].sensorId = sensor.id
         result[0].type = type
-        const minRecord1 = batch.reduce((prev, current) => {
-          if (
-            prev &&
-            prev.data.value &&
-            current.data.value &&
-            prev.data.value <= current.data.value
-          )
-            return prev
-          else return current
-        })
         result[0].data = {
-          value: minRecord1.data.value,
+          value: extremes[0].data.value,
         }
-        result[0].time = minRecord1.time
+        result[0].time = extremes[0].time
+        await result[0].save()
 
+        // max
         result[1] = new HistoryRecord()
         result[1].sensorId = sensor.id
         result[1].type = type
-        const maxRecord1 = batch.reduce((prev, current) => {
-          if (
-            prev &&
-            prev.data.value &&
-            current.data.value &&
-            prev.data.value >= current.data.value
-          )
-            return prev
-          else return current
-        })
         result[1].data = {
-          value: maxRecord1.data.value,
+          value: extremes[1].data.value,
         }
-        result[1].time = maxRecord1.time
-
-        await result[0].save()
+        result[1].time = extremes[1].time
         await result[1].save()
+
         break
       case 'sum':
         result[0] = new HistoryRecord()
@@ -280,21 +300,22 @@ export class HistoryRecordManager extends RecordMiddleware {
         await result[0].save()
         break
     }
-    console.log('--> ' + result[0].toString())
-    if (result[1]) console.log('--> ' + result[1].toString())
+    logger.info(`${this.station?.slug}/${sensor.slug}: ${result[0].toString()}`)
+    if (result[1]) logger.info(`${this.station?.slug}/${sensor.slug}: ${result[1].toString()}`)
     for (const record of batch) {
       record.processed = true
       await record.save()
     }
-    if (type !== 'live') {
-      this.sensorState.get(sensor.slug)![previousRecordType(type)].unprocessedRecordsCount = 0
-    }
+    this.sensorState.get(sensor.slug)![previousRecordType(type)].unprocessedRecordsCount = 0
   }
 
   async process(sensor: Sensor, record: RawRecord): Promise<void> {
     const parsedTime = DateTime.fromISO(record.time)
 
-    if (!this.isNewTime(sensor, parsedTime)) throw new InvalidRecordTimeException(sensor.slug)
+    if (!this.isNewTime(sensor, parsedTime)) {
+      logger.warn(`Received record with invalid time on ${this.station!.slug}/${sensor.slug}!`)
+      throw new InvalidRecordTimeException(sensor.slug)
+    }
 
     const liveRecordBatch = await this.newLiveRecord(sensor, record)
     if (liveRecordBatch) {

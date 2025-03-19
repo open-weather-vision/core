@@ -30,6 +30,6 @@ export default class HistoryRecord extends AppBaseModel {
   declare sensor: BelongsTo<typeof Sensor>
 
   toString() {
-    return `[${this.type}]${this.time.toISO()}(sensor: ${this.sensorId}): ${this.data.value}`
+    return `${this.type}-record for sn. #${this.sensorId}: ${typeof this.data.value === 'number' ? this.data.value.toFixed(2) : `${this.data.value}`} at ${this.time.toLocaleString({ timeStyle: 'short', dateStyle: 'short' })}`
   }
 }

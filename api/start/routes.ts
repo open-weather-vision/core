@@ -13,7 +13,8 @@ import router from '@adonisjs/core/services/router'
 
 router.get('/', async () => {
   return {
-    hello: 'world',
+    apiVersion: 'v1',
+    exactVersion: '1.0.0',
   }
 })
 

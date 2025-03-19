@@ -10,6 +10,7 @@ import { DateTime } from 'luxon'
 
 export default class HistoryController {
   // GET /station/:station/history/now
+  // TODO: Unit conversion
   async now(context: HttpContext) {
     const station = await Station.query().where('slug', context.params.station).first()
 
